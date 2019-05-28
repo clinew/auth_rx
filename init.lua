@@ -96,16 +96,6 @@ minetest.register_authentication_handler( {
 		local rec = auth_db.select_record( username )
 		if rec then
 			local assigned_privs = rec.assigned_privs
-
-			if get_minetest_config( "name" ) == username then
-				-- grant server operator all privileges
-				-- (TODO: implement as function that honors give_to_admin flag)
-				assigned_privs = { }
-				for priv in pairs( core.registered_privileges ) do
-					table.insert( assigned_privs, priv )
-				end
-			end
-
 			return { password = rec.password, privileges = unpack_privileges( assigned_privs ), last_login = rec.newlogin }
 		end
 	end,
@@ -126,9 +116,6 @@ minetest.register_authentication_handler( {
 		end
 	end,
 	set_privileges = function ( username, privileges )
-		-- server operator's privileges are immutable
-		if get_minetest_config( "name" ) == username then return end
-
 		if auth_db.set_assigned_privs( username, pack_privileges( privileges ) ) then
 			minetest.notify_authentication_modified( username )
 			minetest.log( "info", "Reset privileges of player '" .. username .. "' in authentication database" )
